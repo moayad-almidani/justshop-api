@@ -13,6 +13,7 @@ class UpdateProductDTO
      * @param  int|null   $brandId
      * @param  bool|null  $isActive
      * @param  bool|null  $isFeatured
+     * @param  bool|null  $isNew
      * @param  array|null $translations  Locale-keyed translation data arrays.
      * @param  array|null $options       Canonical product option definitions.
      * @param  array|null $variants      Variant data arrays (each may include media[]).
@@ -38,6 +39,7 @@ class UpdateProductDTO
         public ?array  $media         = null,
         public ?array  $tags          = null,
         public ?bool   $syncVariants  = null,
+        public ?bool   $isNew         = null,
     ) {}
 
     public static function fromRequest(
@@ -68,6 +70,7 @@ class UpdateProductDTO
             media:         $request->input('media'),
             tags:          $tags,
             syncVariants:  self::optionalBoolean($request, 'sync_variants'),
+            isNew:         self::optionalBoolean($request, 'is_new'),
         );
     }
 

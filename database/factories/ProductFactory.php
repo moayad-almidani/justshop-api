@@ -27,6 +27,7 @@ class ProductFactory extends Factory
             'category_id' => Category::factory(),
             'brand_id' => Brand::factory(),
             'is_active' => true,
+            'is_new' => false,
         ];
     }
 

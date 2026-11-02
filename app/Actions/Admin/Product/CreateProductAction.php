@@ -60,6 +60,7 @@ class CreateProductAction
                 'brand_id'    => $dto->brandId,
                 'is_active'   => $dto->isActive,
                 'is_featured' => $dto->isFeatured,
+                'is_new'      => $dto->isNew,
             ]);
 
             // ── 2. Create translations ─────────────────────────

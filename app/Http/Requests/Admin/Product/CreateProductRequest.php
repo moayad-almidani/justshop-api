@@ -46,6 +46,11 @@ class CreateProductRequest extends FormRequest
                 'boolean',
             ],
 
+            'is_new' => [
+                'sometimes',
+                'boolean',
+            ],
+
             /*
             |------------------------------------------------------------------
             | Translations

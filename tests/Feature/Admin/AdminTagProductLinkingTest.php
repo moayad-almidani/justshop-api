@@ -53,6 +53,7 @@ class AdminTagProductLinkingTest extends TestCase
             ],
             media: [],
             tags: $tagIds,
+            isNew: true,
         );
     }
 
@@ -69,6 +70,7 @@ class AdminTagProductLinkingTest extends TestCase
 
         $product = app(CreateProductAction::class)->execute($dto);
 
+        $this->assertTrue($product->is_new);
         $this->assertCount(2, $product->tags);
         $this->assertEqualsCanonicalizing(
             [$storeTag->id, $globalTag->id],

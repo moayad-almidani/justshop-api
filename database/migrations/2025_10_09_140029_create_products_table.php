@@ -20,11 +20,13 @@ return new class extends Migration
             $table->foreignId('brand_id')->nullable()->constrained('brands')->nullOnDelete();
             $table->unsignedInteger('sort_order')->default(0);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_new')->default(false);
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
             $table->index('store_id');
             $table->index(['store_id', 'id']);
+            $table->index(['is_featured', 'is_active', 'store_id', 'sort_order'], 'products_marketplace_featured_idx');
         });
     }
 

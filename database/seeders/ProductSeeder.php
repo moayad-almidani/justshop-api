@@ -113,6 +113,8 @@ class ProductSeeder extends Seeder
                 ],
                 'base_price' => 29.99,
                 'description' => 'Premium cotton t-shirt for everyday comfort',
+                'is_featured' => true,
+                'discount_percent' => 15,
             ],
             'Slim Fit Jeans' => [
                 'options' => [
@@ -132,6 +134,8 @@ class ProductSeeder extends Seeder
                 ],
                 'base_price' => 49.99,
                 'description' => 'Floral summer dress perfect for warm days',
+                'is_featured' => true,
+                'is_new' => true,
             ],
             'Yoga Pants' => [
                 'options' => [
@@ -337,6 +341,8 @@ class ProductSeeder extends Seeder
                         'brand_id'    => $brandId,
                         'store_id'    => $storeId,
                         'is_active'   => true,
+                        'is_featured' => (bool) ($config['is_featured'] ?? false),
+                        'is_new'      => (bool) ($config['is_new'] ?? false),
                     ]);
 
                     // ── Product translations ───────────────────────
@@ -352,6 +358,11 @@ class ProductSeeder extends Seeder
                         'name'        => $this->getArabicProductName($productName),
                         'description' => $this->getArabicDescription($productName),
                         'slug'        => Str::slug($this->getArabicProductName($productName)),
+                    ]);
+                } else {
+                    $product->update([
+                        'is_featured' => (bool) ($config['is_featured'] ?? false),
+                        'is_new' => (bool) ($config['is_new'] ?? false),
                     ]);
                 }
 
@@ -404,11 +415,18 @@ class ProductSeeder extends Seeder
                     $finalPrice = max(0.99, $variantPrice + $priceAdjustment);
 
                     // Create variant
-                    $costPrice = round($finalPrice * 0.6, 2); // Cost is 60% of selling price
+                    $sellingPrice = round($finalPrice, 2);
+                    $costPrice = round($sellingPrice * 0.6, 2); // Cost is 60% of selling price
+                    $discountPercent = (float) ($config['discount_percent'] ?? 0);
+                    $compareAtPrice = $discountPercent > 0 && $discountPercent < 100
+                        ? round($sellingPrice / (1 - ($discountPercent / 100)), 2)
+                        : null;
+
                     $variant = ProductVariant::create([
                         'product_id'       => $product->id,
                         'sku'              => $sku,
-                        'price'            => round($finalPrice, 2),
+                        'price'            => $sellingPrice,
+                        'compare_at_price' => $compareAtPrice,
                         'cost_price'       => $costPrice,
                         'quantity'         => rand(5, 100),
                         'batch_number'     => 'BATCH-' . date('Ymd') . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),

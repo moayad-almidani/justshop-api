@@ -28,6 +28,7 @@ class AdminProductDtoTest extends TestCase
         $this->assertNull($dto->categoryId);
         $this->assertNull($dto->brandId);
         $this->assertNull($dto->isActive);
+        $this->assertNull($dto->isNew);
     }
 
     public function test_create_dto_keeps_nullable_brand_id_as_null_when_omitted(): void
@@ -35,6 +36,7 @@ class AdminProductDtoTest extends TestCase
         /** @var CreateProductRequest $request */
         $request = CreateProductRequest::create('/api/v1/admin/stores/1/products', 'POST', [
             'category_id' => 4,
+            'is_new' => true,
             'translations' => [
                 [
                     'locale' => 'ar',
@@ -55,5 +57,20 @@ class AdminProductDtoTest extends TestCase
 
         $this->assertSame(4, $dto->categoryId);
         $this->assertNull($dto->brandId);
+        $this->assertTrue($dto->isNew);
+    }
+
+    public function test_update_dto_preserves_explicit_false_for_is_new(): void
+    {
+        /** @var UpdateProductRequest $request */
+        $request = UpdateProductRequest::create(
+            '/api/v1/admin/stores/1/products/39',
+            'PATCH',
+            ['is_new' => false],
+        );
+
+        $dto = UpdateProductDTO::fromRequest($request, 1, 39);
+
+        $this->assertFalse($dto->isNew);
     }
 }

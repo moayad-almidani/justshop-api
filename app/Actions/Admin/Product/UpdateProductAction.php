@@ -41,6 +41,7 @@ class UpdateProductAction
                 'brand_id'    => $dto->brandId,
                 'is_active'   => $dto->isActive,
                 'is_featured' => $dto->isFeatured,
+                'is_new'      => $dto->isNew,
             ], fn($v) => !is_null($v));
 
             if (!empty($productData)) {

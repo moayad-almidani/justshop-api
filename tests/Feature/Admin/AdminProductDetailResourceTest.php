@@ -22,6 +22,7 @@ class AdminProductDetailResourceTest extends TestCase
             'category_id' => 12,
             'brand_id' => 17,
             'is_active' => true,
+            'is_new' => true,
         ]);
         $product->id = 33;
         $product->created_at = now();
@@ -67,6 +68,7 @@ class AdminProductDetailResourceTest extends TestCase
 
         $this->assertSame(['ar', 'en', 'hi'], $payload['available_locales']);
         $this->assertSame('ar', $payload['default_locale']);
+        $this->assertTrue($payload['is_new']);
 
         $this->assertArrayNotHasKey('name', $payload);
         $this->assertArrayNotHasKey('slug', $payload);

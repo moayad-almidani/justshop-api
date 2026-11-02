@@ -20,6 +20,7 @@ class CreateProductDTO
      * @param  int[]  $tags           Tag IDs to sync. Tags are store-scoped entities
      *                                managed via the dedicated tag API. Product
      *                                endpoints accept IDs only.
+     * @param  bool   $isNew       Merchant-controlled New badge.
      */
     public function __construct(
         public int    $storeId,
@@ -32,6 +33,7 @@ class CreateProductDTO
         public array  $variants,
         public array  $media,
         public array  $tags = [],
+        public bool   $isNew = false,
     ) {}
 
     public static function fromRequest(
@@ -44,6 +46,7 @@ class CreateProductDTO
             brandId:      self::nullableInteger($request, 'brand_id'),
             isActive:     $request->input('status') === ProductStatusEnum::ACTIVE->value,
             isFeatured:   $request->boolean('is_featured', false),
+            isNew:        $request->boolean('is_new', false),
             translations: $request->input('translations', []),
             options:      $request->input('options', []),
             variants:     $request->input('variants', []),
