@@ -38,6 +38,9 @@ class DatabaseSeeder extends Seeder
             CmsMarketingSeeder::class,
             // DefaultThemeSeeder::class, // Basic version
             StoreAssetsSeeder::class, // Must run before themes (for logo/favicon)
+            CentralStoreMediaSeeder::class, // Mirror generated local brand assets to central store_media only when files exist
+            StorySeeder::class, // Seed active demo stories after products and stores exist
+            PromotionalBannerSeeder::class, // Seed public Marketplace Home carousel content
             RichThemeSeeder::class, // Rich version with multiple themes
             SystemTemplateSeeder::class, // Creates ThemeTemplate records (one per system page per theme)
             DefaultSectionSeeder::class, // Creates default ThemeSection, ThemeBlock, ThemeSectionGroup

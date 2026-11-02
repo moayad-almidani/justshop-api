@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\Category;
@@ -11,10 +13,11 @@ class CategorySeeder extends Seeder
 {
     use SeedsDemoStore;
 
-    public function run()
+    public function run(): void
     {
         $storeId = $this->demoStoreId();
         $sortOrder = 0;
+
         $tree = [
             'Electronics' => [
                 'en' => 'Electronics',
@@ -22,8 +25,12 @@ class CategorySeeder extends Seeder
                 'children' => [
                     'Phones' => ['en' => 'Phones', 'ar' => 'الهواتف'],
                     'Laptops' => ['en' => 'Laptops', 'ar' => 'أجهزة الكمبيوتر المحمولة'],
-                    'Accessories' => ['en' => 'Accessories', 'ar' => 'الإكسسوارات'],
-                ]
+                ],
+            ],
+            'Accessories' => [
+                'en' => 'Accessories',
+                'ar' => 'الإكسسوارات',
+                'children' => [],
             ],
             'Fashion' => [
                 'en' => 'Fashion',
@@ -32,7 +39,7 @@ class CategorySeeder extends Seeder
                     'Men Clothing' => ['en' => 'Men Clothing', 'ar' => 'ملابس رجالية'],
                     'Women Clothing' => ['en' => 'Women Clothing', 'ar' => 'ملابس نسائية'],
                     'Shoes' => ['en' => 'Shoes', 'ar' => 'الأحذية'],
-                ]
+                ],
             ],
             'Home Living' => [
                 'en' => 'Home Living',
@@ -41,7 +48,7 @@ class CategorySeeder extends Seeder
                     'Appliances' => ['en' => 'Appliances', 'ar' => 'الأجهزة المنزلية'],
                     'Furniture' => ['en' => 'Furniture', 'ar' => 'الأثاث'],
                     'Decor' => ['en' => 'Decor', 'ar' => 'الديكور'],
-                ]
+                ],
             ],
             'Beauty Health' => [
                 'en' => 'Beauty Health',
@@ -50,7 +57,7 @@ class CategorySeeder extends Seeder
                     'Skincare' => ['en' => 'Skincare', 'ar' => 'العناية بالبشرة'],
                     'Hair Care' => ['en' => 'Hair Care', 'ar' => 'العناية بالشعر'],
                     'Perfumes' => ['en' => 'Perfumes', 'ar' => 'العطور'],
-                ]
+                ],
             ],
             'Sports & Outdoors' => [
                 'en' => 'Sports & Outdoors',
@@ -59,7 +66,7 @@ class CategorySeeder extends Seeder
                     'Fitness Equipment' => ['en' => 'Fitness Equipment', 'ar' => 'معدات اللياقة البدنية'],
                     'Outdoor Gear' => ['en' => 'Outdoor Gear', 'ar' => 'معدات الهواء الطلق'],
                     'Sportswear' => ['en' => 'Sportswear', 'ar' => 'الملابس الرياضية'],
-                ]
+                ],
             ],
             'Toys Games' => [
                 'en' => 'Toys Games',
@@ -68,58 +75,63 @@ class CategorySeeder extends Seeder
                     'Action Figures' => ['en' => 'Action Figures', 'ar' => 'أشكال الحركة'],
                     'Board Games' => ['en' => 'Board Games', 'ar' => 'ألعاب اللوح'],
                     'Educational Toys' => ['en' => 'Educational Toys', 'ar' => 'ألعاب تعليمية'],
-                ]
+                ],
             ],
         ];
 
-        foreach ($tree as $parentKey => $parentData) {
-            // Create parent category
-            $parentCategory = Category::create([
-                'parent_id' => null,
-                'slug' => Str::slug($parentData['en']),
-                'store_id' => $storeId,
-                'sort_order' => $sortOrder,
-                'is_active' => true,
-            ]);
-            $sortOrder++;
+        foreach ($tree as $parentData) {
+            // Accessories is intentionally a root category, like the other Home categories.
+            $parentCategory = $this->syncCategory(
+                data: $parentData,
+                storeId: $storeId,
+                parentId: null,
+                sortOrder: $sortOrder++,
+            );
 
-            // Add translations for parent category
-            $parentCategory->translations()->createMany([
-                [
-                    'locale' => 'en',
-                    'name' => $parentData['en'],
-                    'slug' => Str::slug($parentData['en'])
-                ],
-                [
-                    'locale' => 'ar',
-                    'name' => $parentData['ar'],
-                    'slug' => Str::slug($parentData['ar'])
-                ]
-            ]);
-
-            // Create child categories
-            foreach ($parentData['children'] as $childKey => $childData) {
-                $childCategory = Category::create([
-                    'parent_id' => $parentCategory->id,
-                    'slug' => Str::slug($childData['en']),
-                    'store_id' => $storeId,
-                    'is_active' => true,
-                ]);
-
-                // Add translations for child category
-                $childCategory->translations()->createMany([
-                    [
-                        'locale' => 'en',
-                        'name' => $childData['en'],
-                        'slug' => Str::slug($childData['en'])
-                    ],
-                    [
-                        'locale' => 'ar',
-                        'name' => $childData['ar'],
-                        'slug' => Str::slug($childData['ar'])
-                    ]
-                ]);
+            $childSortOrder = 0;
+            foreach ($parentData['children'] as $childData) {
+                $this->syncCategory(
+                    data: $childData,
+                    storeId: $storeId,
+                    parentId: $parentCategory->id,
+                    sortOrder: $childSortOrder++,
+                );
             }
         }
+    }
+
+    /**
+     * Upsert categories and translations so this seeder can safely repair existing
+     * development data as well as populate a fresh database.
+     *
+     * @param array{en: string, ar: string} $data
+     */
+    private function syncCategory(array $data, int $storeId, ?int $parentId, int $sortOrder): Category
+    {
+        $category = Category::withTrashed()->updateOrCreate(
+            ['slug' => Str::slug($data['en'])],
+            [
+                'store_id' => $storeId,
+                'parent_id' => $parentId,
+                'sort_order' => $sortOrder,
+                'is_active' => true,
+            ],
+        );
+
+        if ($category->trashed()) {
+            $category->restore();
+        }
+
+        foreach (['en', 'ar'] as $locale) {
+            $category->translations()->updateOrCreate(
+                ['locale' => $locale],
+                [
+                    'name' => $data[$locale],
+                    'slug' => Str::slug($data[$locale]),
+                ],
+            );
+        }
+
+        return $category;
     }
 }

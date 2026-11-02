@@ -257,7 +257,10 @@ Route::prefix('/v1/storefront/runtime')
        //  'web',
     ])
     ->group(function (): void {
-        require 'api/v1/storefront/runtime.php';
+        $runtimeRoutes = __DIR__ . '/api/v1/storefront/runtime.php';
+        if (is_file($runtimeRoutes)) {
+            require $runtimeRoutes;
+        }
     });
 Route::prefix('/v1/storefront')
     ->middleware([
@@ -274,13 +277,20 @@ Route::prefix('/v1/storefront')
             Route::get('/{handle}', [\App\Http\Controllers\Api\Storefront\StorefrontNavigationController::class, 'show']);
         });
 
-        require 'api/v1/storefront/products.php';
-        require 'api/v1/storefront/cart.php';
-        require 'api/v1/storefront/orders.php';
-        require 'api/v1/storefront/addresses.php';
-        require 'api/v1/storefront/checkout.php';
-        require 'api/v1/storefront/search.php';
-        require 'api/v1/storefront/homepage.php';
+        $productsRoutes = __DIR__ . '/api/v1/storefront/products.php';
+        if (is_file($productsRoutes)) { require $productsRoutes; }
+        $cartRoutes = __DIR__ . '/api/v1/storefront/cart.php';
+        if (is_file($cartRoutes)) { require $cartRoutes; }
+        $ordersRoutes = __DIR__ . '/api/v1/storefront/orders.php';
+        if (is_file($ordersRoutes)) { require $ordersRoutes; }
+        $addressesRoutes = __DIR__ . '/api/v1/storefront/addresses.php';
+        if (is_file($addressesRoutes)) { require $addressesRoutes; }
+        $checkoutRoutes = __DIR__ . '/api/v1/storefront/checkout.php';
+        if (is_file($checkoutRoutes)) { require $checkoutRoutes; }
+        $searchRoutes = __DIR__ . '/api/v1/storefront/search.php';
+        if (is_file($searchRoutes)) { require $searchRoutes; }
+        $homepageRoutes = __DIR__ . '/api/v1/storefront/homepage.php';
+        if (is_file($homepageRoutes)) { require $homepageRoutes; }
     });
 
 // Storefront webhooks (no auth/identity middleware - Stripe signature verification only)
@@ -288,7 +298,8 @@ Route::middleware([
    //  'web',
 ])
     ->group(function (): void {
-        require 'api/v1/storefront/webhooks.php';
+        $webhookRoutes = __DIR__ . '/api/v1/storefront/webhooks.php';
+        if (is_file($webhookRoutes)) { require $webhookRoutes; }
     });
 
 Route::prefix('/v1/storefront/account')
@@ -339,6 +350,7 @@ Route::prefix('/v1/public')
     ->group(function (): void {
         require 'api/v1/public/cms.php';
         require 'api/v1/public/leads.php';
+        require 'api/v1/public/marketplace.php';
     });
 
 // ── 7. SYSTEM & SHARED ───────────────────────────────────────────────────

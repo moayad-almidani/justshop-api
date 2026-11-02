@@ -57,6 +57,7 @@ return new class extends Migration
 
             $table->index('owner_id');
             $table->index('active_theme_id');
+            $table->index(['is_active', 'status'], 'stores_marketplace_visibility_idx');
         });
     }
 

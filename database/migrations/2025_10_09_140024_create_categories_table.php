@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamps();
             $table->index('store_id');
             $table->index(['store_id', 'id']);
+            $table->index(['parent_id', 'is_active', 'store_id', 'sort_order'], 'categories_marketplace_roots_idx');
         });
     }
 

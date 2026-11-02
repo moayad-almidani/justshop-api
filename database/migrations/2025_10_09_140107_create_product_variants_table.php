@@ -31,6 +31,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index(['product_id', 'is_active', 'track_inventory', 'quantity'], 'variants_marketplace_stock_idx');
         });
     }
 
