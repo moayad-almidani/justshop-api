@@ -93,8 +93,10 @@ class ReconcileSubscriptionsCommand extends Command
 
                         $this->warn("❌ Drift detected: Subscription #{$subscription->id}");
                         $this->line("   Account: #{$subscription->billing_account_id}");
-                        $this->line("   Local plan:  {$subscription->plan->name['en'] ?? 'Unknown'} (ID: {$subscription->plan_id})");
-                        $this->line("   Stripe plan: {$actualPlan->name['en'] ?? 'Unknown'} (ID: {$actualPlan->id})");
+                        $localPlanName = data_get($subscription->plan, 'name.en', 'Unknown');
+                        $stripePlanName = data_get($actualPlan, 'name.en', 'Unknown');
+                        $this->line("   Local plan:  {$localPlanName} (ID: {$subscription->plan_id})");
+                        $this->line("   Stripe plan: {$stripePlanName} (ID: {$actualPlan->id})");
 
                         if (!$dryRun) {
                             // Fix the drift
