@@ -42,7 +42,7 @@ class CategoryRepository extends BaseRepository
     ): Collection {
         $query = $this->scopedQuery()
             ->whereNull('parent_id')
-            ->with(['translations', 'children.translations'])
+            ->with(['translations', 'mediaLinks.media', 'children.translations', 'children.mediaLinks.media'])
             ->withCount(['products' => fn(Builder $q) => $q
                 ->where('is_active', true)
                 ->where('store_id', $storeId),
@@ -62,7 +62,7 @@ class CategoryRepository extends BaseRepository
     ): Collection {
         return $this->scopedQuery()
             ->where('parent_id', $parentId)
-            ->with(['translations', 'children.translations'])
+            ->with(['translations', 'mediaLinks.media', 'children.translations', 'children.mediaLinks.media'])
             ->withCount(['products' => fn(Builder $q) => $q
                 ->where('is_active', true)
                 ->where('store_id', $storeId),
@@ -79,7 +79,7 @@ class CategoryRepository extends BaseRepository
     ): LengthAwarePaginator {
         $query = Category::query()
             ->where('store_id', $storeId)
-            ->with(['translations', 'parent.translations'])
+            ->with(['translations', 'mediaLinks.media', 'parent.translations'])
             ->withCount(['products' => fn(Builder $q) => $q
                 ->where('store_id', $storeId),
             ])
@@ -144,7 +144,7 @@ class CategoryRepository extends BaseRepository
     ): ?Category {
         return $this->scopedQuery()
             ->where('slug', $slug)
-            ->with(['translations', 'children.translations'])
+            ->with(['translations', 'mediaLinks.media', 'children.translations', 'children.mediaLinks.media'])
             ->withCount(['products' => fn(Builder $q) => $q
                 ->where('is_active', true)
                 ->where('store_id', $storeId),

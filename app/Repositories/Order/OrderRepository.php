@@ -24,6 +24,7 @@ class OrderRepository extends BaseRepository
             ->with([
                 'items.productVariant.product.translations',
                 'items.productVariant.images',
+                'items.productVariant.mediaLinks.media',
                 'shippingAddress',
                 'billingAddress',
                 'paymentMethod',
@@ -37,6 +38,7 @@ class OrderRepository extends BaseRepository
         return $this->scopedQuery()
             ->with([
                 'items.productVariant.product.images',
+                'items.productVariant.product.mediaLinks.media',
                 'shippingAddress',
                 'billingAddress',
                 'paymentMethod'
@@ -49,6 +51,7 @@ class OrderRepository extends BaseRepository
         return $this->scopedQuery()
             ->with([
                 'items.productVariant.product.images',
+                'items.productVariant.product.mediaLinks.media',
                 'shippingAddress',
                 'billingAddress',
                 'paymentMethod'

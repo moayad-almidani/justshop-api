@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Models\Media\ProductMedia;
+use App\Models\Story\Story;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -22,14 +24,22 @@ class Product extends Model
         'product_variant_id',
         'is_active',
         'is_featured',
+        'is_new',
         'sort_order',
     ];
 
     protected $casts = [
         'is_active'   => 'boolean',
         'is_featured' => 'boolean',
+        'is_new'      => 'boolean',
         'sort_order'  => 'integer',
     ];
+
+    /** Centralized attachment table; legacy images()/assets() retained during migration. */
+    public function mediaLinks(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)->orderBy('sort_order');
+    }
 
     // ── Relationships ──────────────────────────────────────────
 
@@ -92,6 +102,12 @@ class Product extends Model
     public function tags(): BelongsToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /** Stories may optionally tag a product from the same store. */
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class);
     }
 
     public function reviews(): HasMany
@@ -162,6 +178,14 @@ class Product extends Model
      */
     public function getPrimaryImageUrlAttribute(): ?string
     {
+        if ($this->relationLoaded('mediaLinks') && $this->mediaLinks->isNotEmpty()) {
+            $selected = $this->mediaLinks->first(fn ($link) => $link->is_main && $link->media?->type === \App\Enums\Media\MediaType::Image)
+                ?? $this->mediaLinks->first(fn ($link) => $link->media?->type === \App\Enums\Media\MediaType::Image);
+            if ($selected) {
+                return $selected->media?->url();
+            }
+        }
+
         // ── 1. Product-level images (correct owner) ────────────
         if ($this->relationLoaded('images') && $this->images->isNotEmpty()) {
             $primary = $this->images->where('is_primary', true)->first()

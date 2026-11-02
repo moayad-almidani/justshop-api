@@ -11,6 +11,7 @@ class ProductDetailResource extends JsonResource
     {
         $locale = app()->getLocale();
         $translation = $this->translation($locale);
+        $this->resource->loadMissing('mediaLinks.media', 'activeVariants.mediaLinks.media');
 
         return [
             'id'                 => $this->id,
@@ -18,6 +19,7 @@ class ProductDetailResource extends JsonResource
             'slug'               => $translation?->slug ?? '',
             'description'        => $translation?->description ?? '',
             'default_variant_id' => $this->product_variant_id,
+            'media' => \App\Support\Media\CentralGallery::format($this->mediaLinks)->all(),
 
             'category' => $this->whenLoaded('category', function () use ($locale) {
                 $catTranslation = $this->category->translations
@@ -91,6 +93,11 @@ class ProductDetailResource extends JsonResource
             'alt_text'   => $img->alt_text,
             'is_primary' => $img->is_primary,
         ])->values()->toArray();
+
+        $central = \App\Support\Media\CentralGallery::forVariant($variant);
+        if ($central->isNotEmpty()) {
+            $images = $central->all();
+        }
 
         return [
             'id'               => $variant->id,

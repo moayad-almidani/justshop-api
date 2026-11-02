@@ -21,6 +21,8 @@ class AdminCategoryResource extends JsonResource
             'is_active'      => $this->is_active,
             'store_id'       => $this->store_id,
             'parent_id'      => $this->parent_id,
+            'media' => $this->whenLoaded('mediaLinks', fn () => \App\Support\Media\CentralGallery::format($this->mediaLinks)->all()),
+            'image_url' => $this->whenLoaded('mediaLinks', fn () => $this->mediaLinks->first(fn ($link) => $link->media?->type === \App\Enums\Media\MediaType::Image)?->media?->url()),
             'translation'    => $translation ? [
                 'locale' => $translation->locale,
                 'name'   => $translation->name,

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Media\CategoryMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
@@ -29,6 +30,12 @@ class Category extends Model
         'is_active'  => 'boolean',
         'sort_order' => 'integer',
     ];
+
+    /** Centralized attachment table; legacy images()/assets() retained during migration. */
+    public function mediaLinks(): HasMany
+    {
+        return $this->hasMany(CategoryMedia::class)->orderBy('sort_order');
+    }
 
     // ── Relationships ──────────────────────────────────────────
 

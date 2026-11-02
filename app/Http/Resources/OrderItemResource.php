@@ -23,6 +23,14 @@ class OrderItemResource extends JsonResource
             $imageUrl = $primaryImage ? $primaryImage->full_url : null;
         }
 
+        if ($variantLoaded && $variant) {
+            $imageUrl = ($variant->relationLoaded('mediaLinks') ? $variant->primaryImageUrl : null)
+                ?? ($variant->relationLoaded('product') && $variant->product?->relationLoaded('mediaLinks')
+                    ? $variant->product->mediaLinks->first(fn ($link) => $link->media?->type === \App\Enums\Media\MediaType::Image)?->media?->url()
+                    : null)
+                ?? $imageUrl;
+        }
+
         // Get product slug if loaded
         $slug = null;
         if ($variantLoaded && $variant->relationLoaded('product')) {

@@ -22,7 +22,11 @@ class CartItemResource extends JsonResource
         // ── Variant primary image ──
         $primaryImage = $variant->images->where('is_primary', true)->first()
             ?? $variant->images->first();
-        $imageUrl = $primaryImage ? $primaryImage->full_url : null;
+        $imageUrl = $variant->primaryImageUrl
+            ?? ($product->relationLoaded('mediaLinks')
+                ? $product->mediaLinks->first(fn ($link) => $link->media?->type === \App\Enums\Media\MediaType::Image)?->media?->url()
+                : null)
+            ?? ($primaryImage ? $primaryImage->full_url : null);
 
         // ── Translated attributes ──
         $attributes = $variant->optionValues->map(function ($ov) {

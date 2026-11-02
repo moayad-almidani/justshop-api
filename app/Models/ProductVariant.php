@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Models\Media\ProductVariantMedia;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariant extends Model
@@ -44,6 +46,12 @@ class ProductVariant extends Model
         'position'         => 'integer',
     ];
 
+    /** Centralized attachment table; legacy images()/assets() retained during migration. */
+    public function mediaLinks(): HasMany
+    {
+        return $this->hasMany(ProductVariantMedia::class)->orderBy('sort_order');
+    }
+
     // ── Relationships ──────────────────────────────────────────
 
     public function product(): BelongsTo
@@ -80,6 +88,14 @@ class ProductVariant extends Model
 
     public function getPrimaryImageUrlAttribute(): ?string
     {
+        if ($this->relationLoaded('mediaLinks') && $this->mediaLinks->isNotEmpty()) {
+            $selected = $this->mediaLinks->first(fn ($link) => $link->is_main && $link->media?->type === \App\Enums\Media\MediaType::Image)
+                ?? $this->mediaLinks->first(fn ($link) => $link->media?->type === \App\Enums\Media\MediaType::Image);
+            if ($selected) {
+                return $selected->media?->url();
+            }
+        }
+
         if ($this->relationLoaded('images')) {
             $primary = $this->images->where('is_primary', true)->first()
                 ?? $this->images->first();

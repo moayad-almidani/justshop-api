@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Media\StoreMedia;
+use App\Models\Story\Story;
 
 class Store extends Model
 {
@@ -80,6 +82,12 @@ class Store extends Model
         ];
     }
 
+    /** Centralized attachment table; legacy images()/assets() retained during migration. */
+    public function mediaLinks(): HasMany
+    {
+        return $this->hasMany(StoreMedia::class)->orderBy('sort_order');
+    }
+
     // ── Relationships ──────────────────────────────────────────
 
     public function owner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -103,6 +111,12 @@ class Store extends Model
     public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /** Stories are owned by the Store; product tagging is optional metadata. */
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class);
     }
 
     public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany

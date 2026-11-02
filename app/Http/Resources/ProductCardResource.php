@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Support\Media\MediaUrl;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductCardResource extends JsonResource
@@ -15,7 +16,9 @@ class ProductCardResource extends JsonResource
             'product_variant_id' => $this->product_variant_id,
             'slug' => $this->slug,
             'category_id' => $this->category_id,
-            'primary_image' => $this->formatImageUrl($this->primary_image),
+            'primary_image' => $this->central_media_path
+                ? Storage::disk($this->central_media_disk)->url($this->central_media_path)
+                : $this->formatImageUrl($this->primary_image),
             'alt_text' => $this->alt_text,
             'product_name' => $this->product_name,
             'price' => $this->price,

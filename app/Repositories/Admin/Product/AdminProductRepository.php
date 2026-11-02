@@ -46,6 +46,7 @@ class AdminProductRepository
         return [
             // ── Product-level media ────────────────────────────
             'images',
+            'mediaLinks.media',
 
             // ── New option system ──────────────────────────────
             'productOptions.values',
@@ -53,6 +54,7 @@ class AdminProductRepository
 
             // ── Variant-level media ────────────────────────────
             'variants.images',
+            'variants.mediaLinks.media',
 
             // ── Common ─────────────────────────────────────────
             'category',
@@ -96,8 +98,10 @@ class AdminProductRepository
             ->with([
                 'category',
                 'images',
+                'mediaLinks.media',
                 'variants',
                 'variants.images',
+                'variants.mediaLinks.media',
                 'translations',
             ])
             ->latest()

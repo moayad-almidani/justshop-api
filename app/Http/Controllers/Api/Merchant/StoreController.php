@@ -48,7 +48,7 @@ class StoreController extends Controller
         $dto = CreateStoreDTO::fromRequest($request);
         $store = $this->createStoreAction->execute($dto);
 
-        return $this->success(new StoreResource($store), 'Store created successfully', 201);
+        return $this->success(new StoreResource($store->loadMissing('mediaLinks.media')), 'Store created successfully', 201);
     }
 
     public function show(Request $request, Store $store): JsonResponse
@@ -57,7 +57,7 @@ class StoreController extends Controller
         $this->guardStoreAccess($request, $storeModel);
         $this->authorize('view', $storeModel);
 
-        return $this->success(new StoreResource($storeModel), 'Store retrieved successfully');
+        return $this->success(new StoreResource($storeModel->loadMissing('mediaLinks.media')), 'Store retrieved successfully');
     }
 
     public function update(UpdateStoreRequest $request, Store $store): JsonResponse
@@ -69,7 +69,7 @@ class StoreController extends Controller
         $dto = UpdateStoreDTO::fromRequest($request, $store->id);
         $storeModel = $this->updateStoreAction->execute($dto);
 
-        return $this->success(new StoreResource($storeModel), 'Store updated successfully');
+        return $this->success(new StoreResource($storeModel->loadMissing('mediaLinks.media')), 'Store updated successfully');
     }
 
     private function guardStoreAccess(Request $request, Store $store): void

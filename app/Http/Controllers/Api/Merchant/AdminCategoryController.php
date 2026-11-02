@@ -58,7 +58,7 @@ class AdminCategoryController extends Controller
             ),
         );
 
-        return $this->success(new AdminCategoryResource($result));
+        return $this->success(new AdminCategoryResource($result->loadMissing('mediaLinks.media')));
     }
 
     public function store(
@@ -73,7 +73,7 @@ class AdminCategoryController extends Controller
         );
 
         return $this->success(
-            data:       new AdminCategoryResource($result),
+            data:       new AdminCategoryResource($result->loadMissing('mediaLinks.media')),
             message:    __( 'category.created'),
             statusCode: 201,
         );
@@ -92,7 +92,7 @@ class AdminCategoryController extends Controller
         );
 
         return $this->success(
-            data:    new AdminCategoryResource($result),
+            data:    new AdminCategoryResource($result->loadMissing('mediaLinks.media')),
             message: __( 'category.updated'),
         );
     }
@@ -131,7 +131,7 @@ class AdminCategoryController extends Controller
         );
 
         return $this->success(
-            data:    new AdminCategoryResource($result),
+            data:    new AdminCategoryResource($result->loadMissing('mediaLinks.media')),
             message: __( 'category.restored'),
         );
     }

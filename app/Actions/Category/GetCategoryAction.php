@@ -23,6 +23,6 @@ class GetCategoryAction
             throw new NotFoundException(__('error.category_not_found'));
         }
 
-        return $category;
+        return $category->loadMissing('mediaLinks.media');
     }
 }

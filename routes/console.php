@@ -60,3 +60,9 @@ Schedule::command(ExpireAbandonedOrdersCommand::class, ['--minutes=60'])
     ->name('orders-expire-abandoned')
     ->withoutOverlapping(900) // Prevent overlapping for 15 minutes
     ->runInBackground();
+
+// Central media: detach on writes, delete bytes only after a grace period.
+Schedule::command(\App\Console\Commands\Media\PruneOrphanMediaCommand::class)
+    ->dailyAt('02:30')
+    ->name('media-prune-orphans')
+    ->withoutOverlapping();

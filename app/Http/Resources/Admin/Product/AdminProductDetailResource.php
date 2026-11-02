@@ -6,7 +6,6 @@ use App\Enums\Product\ProductStatusEnum;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Log;
 
 class AdminProductDetailResource extends JsonResource
 {
@@ -25,6 +24,7 @@ class AdminProductDetailResource extends JsonResource
                 ? ProductStatusEnum::ACTIVE->value
                 : ProductStatusEnum::DRAFT->value,
             'is_featured'       => (bool) $this->is_featured,
+            'is_new'            => (bool) $this->is_new,
             'price'             => $defaultVariant
                 ? (float) $defaultVariant->price
                 : 0,
@@ -133,23 +133,14 @@ class AdminProductDetailResource extends JsonResource
      */
     private function buildProductMedia(): array
     {
+        if ($this->relationLoaded('mediaLinks') && $this->mediaLinks->contains(fn ($link) => $link->media !== null)) {
+            return \App\Support\Media\CentralGallery::format($this->mediaLinks)->all();
+        }
         
         if (!$this->relationLoaded('images')) {
             return [];
         }
         
-        $image =  $this->images
-        ->sortBy('sort_order')
-        ->map(fn($image) => [
-            'id'         => $image->id,
-            'url'        => $image->full_url,
-            'alt'        => $image->alt_text ?? null,
-            'position'   => $image->sort_order ?? 0,
-            'is_primary' => (bool) $image->is_primary,
-        ])
-        ->values()
-        ->all();
-        Log::info('images',[ 'images' => $image]);
         return $this->images
             ->sortBy('sort_order')
             ->map(fn($image) => [
@@ -263,7 +254,10 @@ class AdminProductDetailResource extends JsonResource
 
         // ── Variant-level media ────────────────────────────────
         // Owned by ProductVariant. Maps DB sort_order → API position.
-        $media = $variant->relationLoaded('images')
+        $media = $variant->relationLoaded('mediaLinks') && $variant->mediaLinks->contains(fn ($link) => $link->media !== null)
+            ? \App\Support\Media\CentralGallery::format($variant->mediaLinks)->all()
+            : null;
+        $media ??= $variant->relationLoaded('images')
             ? $variant->images
                 ->sortBy('sort_order')
                 ->map(fn($image) => [

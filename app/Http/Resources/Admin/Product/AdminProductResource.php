@@ -35,10 +35,23 @@ class AdminProductResource extends JsonResource
             return null;
         });
 
+        if ($this->relationLoaded('variants')) {
+            foreach ($this->variants as $variant) {
+                if ($variant->relationLoaded('mediaLinks') && $variant->mediaLinks->isNotEmpty()) {
+                    $thumbnail = $variant->primaryImageUrl ?? $thumbnail;
+                    break;
+                }
+            }
+        }
+        if ($this->relationLoaded('mediaLinks') && $this->mediaLinks->isNotEmpty()) {
+            $thumbnail ??= $this->primaryImageUrl;
+        }
+
         return [
             'id'         => $this->id,
             'name'       => $this->translation()?->name,
             'status'     => $this->is_active ? ProductStatusEnum::ACTIVE->value : ProductStatusEnum::DRAFT->value,
+            'is_new'     => (bool) $this->is_new,
             'price'      => $defaultVariant
                 ? (float) $defaultVariant->price
                 : 0,

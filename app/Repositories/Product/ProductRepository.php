@@ -51,6 +51,30 @@ class ProductRepository extends BaseRepository
                     LIMIT 1
                 )"));
             })
+            // Prefer centrally managed variant images, then shared product images;
+            // preserve the legacy polymorphic image join as a fallback.
+            ->leftJoin('product_variant_media as central_variant_link', function ($join) {
+                $join->on('central_variant_link.id', '=', DB::raw("(
+                    SELECT pvm.id FROM product_variant_media pvm
+                    INNER JOIN media m ON m.id = pvm.media_id
+                    WHERE pvm.product_variant_id = display_v.id
+                      AND m.type = 'image' AND m.deleted_at IS NULL
+                    ORDER BY (CASE WHEN pvm.is_main = 1 THEN 0 ELSE 1 END), pvm.sort_order, pvm.id
+                    LIMIT 1
+                )"));
+            })
+            ->leftJoin('media as central_variant_file', 'central_variant_file.id', '=', 'central_variant_link.media_id')
+            ->leftJoin('product_media as central_product_link', function ($join) {
+                $join->on('central_product_link.id', '=', DB::raw("(
+                    SELECT pm.id FROM product_media pm
+                    INNER JOIN media m ON m.id = pm.media_id
+                    WHERE pm.product_id = products.id
+                      AND m.type = 'image' AND m.deleted_at IS NULL
+                    ORDER BY (CASE WHEN pm.is_main = 1 THEN 0 ELSE 1 END), pm.sort_order, pm.id
+                    LIMIT 1
+                )"));
+            })
+            ->leftJoin('media as central_product_file', 'central_product_file.id', '=', 'central_product_link.media_id')
             ->select(
                 'products.id as product_id',
                 'products.category_id',
@@ -59,8 +83,11 @@ class ProductRepository extends BaseRepository
                 'product_translations.name as product_name',
                 'product_translations.description as description',
                 'display_v.price as price',
-                'images.image_url as primary_image'
-            );
+                'images.image_url as primary_image',
+                'images.alt_text as alt_text'
+            )
+            ->selectRaw('COALESCE(central_variant_file.disk, central_product_file.disk) as central_media_disk')
+            ->selectRaw('COALESCE(central_variant_file.path, central_product_file.path) as central_media_path');
     }
 
     public function getFilterRanges(Builder $query): object

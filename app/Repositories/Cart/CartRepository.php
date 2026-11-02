@@ -28,6 +28,8 @@ class CartRepository
         return $cart->load([
             'items.productVariant.product.translations',
             'items.productVariant.images',
+            'items.productVariant.mediaLinks.media',
+            'items.productVariant.product.mediaLinks.media',
             'items.productVariant.optionValues.option',
         ]);
     }
