@@ -245,6 +245,29 @@ Route::name('merchant.')
         Route::get('navigation-permissions', [\App\Http\Controllers\Api\Merchant\NavigationPermissionsController::class, 'index'])
             ->name('navigation-permissions');
 
+        // ── Central media attachments (new; legacy image routes remain operational) ──
+        Route::prefix('media/attachments/{entity}/{entityId}')
+            ->where(['entity' => 'products|variants|categories|stores', 'entityId' => '[0-9]+'])
+            ->group(function () {
+                Route::get('/', [\App\Http\Controllers\Api\Merchant\Media\MediaAttachmentController::class, 'index'])
+                    ->name('media.attachments.index');
+                Route::post('/', [\App\Http\Controllers\Api\Merchant\Media\MediaAttachmentController::class, 'store'])
+                    ->middleware('subscription.active')->name('media.attachments.store');
+                Route::patch('/{attachmentId}/main', [\App\Http\Controllers\Api\Merchant\Media\MediaAttachmentController::class, 'setMain'])
+                    ->whereNumber('attachmentId')->middleware('subscription.active')
+                    ->name('media.attachments.main');
+                Route::delete('/{attachmentId}', [\App\Http\Controllers\Api\Merchant\Media\MediaAttachmentController::class, 'destroy'])
+                    ->whereNumber('attachmentId')->middleware('subscription.active')
+                    ->name('media.attachments.destroy');
+            });
+
+        // ── Store Stories (each slide belongs to this store) ──
+        Route::prefix('stories')->controller(\App\Http\Controllers\Api\Merchant\Story\StoreStoryController::class)->group(function () {
+            Route::get('/', 'index')->name('stories.index');
+            Route::post('/', 'store')->middleware('subscription.active')->name('stories.store');
+            Route::delete('/{storyId}', 'destroy')->whereNumber('storyId')->middleware('subscription.active')->name('stories.destroy');
+        });
+
         // ── Generic Media Upload ───────────────────────────────
         Route::prefix('media')->group(function () {
             // Write operations - require active subscription
